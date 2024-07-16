@@ -1,0 +1,43 @@
+import click
+from transformers import pipeline
+
+# Initialize the summarization pipeline
+summarizer = pipeline("summarization")
+
+
+def summarize_text(text):
+    # Summarize the text using the Hugging Face transformers pipeline
+    summary = summarizer(text, max_length=130, min_length=30, do_sample=False)
+    return summary[0]['summary_text']
+
+
+def summarize(text_file, text=None):
+    """ A command line tool that takes a text file or direct text input and returns the summary. """
+    if text_file:
+        with open(text_file, 'r') as file:
+            text_content = file.read()
+    elif text:
+        text_content = text
+    else:
+        click.echo("Please provide either a text file or direct text input.")
+        return
+
+    summary = summarize_text(text_content)
+    click.echo(f"Summary: {summary}")
+
+
+@click.command()
+@click.option('-t',
+              '--text-file',
+              type=click.Path(exists=True, readable=True),
+              help='Path to the text file')
+@click.argument('text', required=False)
+def cli(text_file, text):
+    summarize(text_file, text)
+
+
+if __name__ == '__main__':
+    cli()
+
+
+
